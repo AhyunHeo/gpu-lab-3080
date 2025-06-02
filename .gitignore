@@ -1,0 +1,19 @@
+   # Python 가상환경
+   venv/
+   env/
+   .venv/
+   .env/
+
+   # 대용량 파일 예시
+   *.zip
+   *.tar
+   *.tar.gz
+   *.h5
+   *.pt
+   *.pkl
+   *.ckpt
+
+   # 기타 무시할 폴더/파일
+   __pycache__/
+   *.pyc
+   *.log
