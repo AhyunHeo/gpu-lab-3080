@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  api-server:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: gpu_api_server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+    depends_on:
+      - mongo
+    restart: always
+
+  mongo:
+    image: mongo:latest
+    container_name: gpu_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  gradio-ui:
+    build:
+      context: ./gradio
+      dockerfile: Dockerfile
+    container_name: gpu_gradio_ui
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./gradio:/app
+    depends_on:
+      - api-server
+    restart: always
+
+volumes:
+  mongo-data:
