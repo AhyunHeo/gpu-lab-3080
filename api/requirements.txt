@@ -1,6 +1,7 @@
+torch
+torchvision
+onnx
+onnxruntime
 fastapi
 uvicorn
-onnxruntime-gpu
-numpy
 pymongo
-gradio

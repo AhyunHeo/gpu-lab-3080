@@ -7,12 +7,14 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# requirements 먼저 복사 → 의존성 설치
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 전체 코드 복사
 COPY . .
 
-# ✅ ONNX 모델이 없으면 export_onnx.py 실행
-RUN python3 -c "import os; import pathlib; not pathlib.Path('resnet50.onnx').exists() and __import__('export_onnx')"
+# ✅ ONNX 파일이 없으면 export 스크립트 실행
+RUN python3 -c "import pathlib; not pathlib.Path('resnet50.onnx').exists() and __import__('export_onnx')"
 
 CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8000"]
