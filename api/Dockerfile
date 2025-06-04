@@ -12,4 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# ✅ ONNX 모델이 없으면 export_onnx.py 실행
+RUN python3 -c "import os; import pathlib; not pathlib.Path('resnet50.onnx').exists() and __import__('export_onnx')"
+
 CMD ["uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8000"]
