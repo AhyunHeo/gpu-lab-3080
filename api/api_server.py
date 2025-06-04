@@ -11,6 +11,12 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 from bson import ObjectId
+# api_server.py 또는 onnx_infer.py 상단에 추가
+import pathlib
+from export_onnx import export_resnet
+
+if not pathlib.Path("resnet50.onnx").exists():
+    export_resnet()
 
 app = FastAPI()
 
