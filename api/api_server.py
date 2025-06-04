@@ -7,6 +7,10 @@ from datetime import datetime
 from pymongo import MongoClient
 import gradio as gr
 import requests
+import time
+import matplotlib.pyplot as plt
+import pandas as pd
+from bson import ObjectId
 
 app = FastAPI()
 
@@ -19,6 +23,7 @@ nodes_collection = db["nodes"]
 class JobRequest(BaseModel):
     input: List
     metadata: Optional[dict] = {}
+    priority: Optional[int] = 1
 
 class NodeStatus(BaseModel):
     node_id: str
@@ -42,7 +47,9 @@ async def register_job(job: JobRequest):
     doc = {
         "input": job.input,
         "metadata": job.metadata,
+        "priority": job.priority,
         "status": "queued",
+        "history": [{"status": "queued", "timestamp": datetime.utcnow()}],
         "created_at": datetime.utcnow()
     }
     result = jobs_collection.insert_one(doc)
@@ -62,8 +69,9 @@ async def report_status(status: NodeStatus):
 async def get_job():
     job = jobs_collection.find_one_and_update(
         {"status": "queued"},
-        {"$set": {"status": "assigned", "assigned_at": datetime.utcnow()}},
-        sort=[("created_at", 1)]
+        {"$set": {"status": "assigned", "assigned_at": datetime.utcnow()},
+         "$push": {"history": {"status": "assigned", "timestamp": datetime.utcnow()}}},
+        sort=[("priority", -1), ("created_at", 1)]
     )
     if job:
         return {"job_id": str(job["_id"]), "input": job["input"]}
@@ -72,8 +80,9 @@ async def get_job():
 @app.post("/submit_result")
 async def submit_result(result: ResultSubmit):
     jobs_collection.update_one(
-        {"_id": result.job_id},
-        {"$set": {"status": "completed", "result": result.result, "completed_at": datetime.utcnow()}}
+        {"_id": ObjectId(result.job_id)},
+        {"$set": {"status": "completed", "result": result.result, "completed_at": datetime.utcnow()},
+         "$push": {"history": {"status": "completed", "timestamp": datetime.utcnow()}}}
     )
     return {"status": "result saved"}
 
